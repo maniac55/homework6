@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>game</title>
+    </head>
+    <body>
+        <style>
+            #canvas{
+                display: block;
+                margin: auto;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+        </style>
+        <canvas id="canvas" width="800px" height="600px"></canvas>
+        <script>
+		
+		const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+
+const rand = function(num){
+    return Math.floor(Math.random() * num) + 1;
+}
+let board;
+var gameOver = false;
+var x = 200;
+var y = 0;
+var isDrawn = 0;
+var oTurn = 0;
+var clickRdy = false;
+
+const whoStarts = function(){
+
+	var whoGoesFirst = rand(2);
+    if(whoGoesFirst === 2){
+        const enemyStart = function(){
+            if(isDrawn === 2){
+                makeMove(board,nextMove(board,false),false);
+            } else {
+                requestAnimationFrame(enemyStart)
+            }
+        }
+        enemyStart();
+    }
+}
+
+const boardDrawLoop = function(){
+
+    if(isDrawn === 0){
+        boardRow(x,y);
+        y = 600;
+        if(y === 600 && x === 200){
+            x = 400;
+            y = 0;
+        }
+        if(y === 600 && x === 400){
+            isDrawn = 1;
+            x = 0;
+            y = 200;
+        }
+    } else if(isDrawn === 1){
+        boardColumn(x,y);
+        x = 600;
+        if(x === 600 && y === 200){
+            x = 0;
+            y = 400;
+        }
+        if(x === 600 && y === 400){
+            isDrawn = 2;
+        }
+    }//great!
+    if(isDrawn === 0 || isDrawn === 1){
+        requestAnimationFrame(boardDrawLoop);
+    }
+}
+
+
+const boardRow = function(x,y){
+
+    context.beginPath();
+    context.moveTo(x,y);
+    context.lineTo(x,600);
+    context.stroke();
+}
+
+const boardColumn = function(x,y){
+
+    context.beginPath();
+    context.moveTo(x,y);
+    context.lineTo(600,y);
+    context.stroke();
+}
+
+const drawXO = function(x,y,isX){
+    if(isX === true){
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x+150, y+150);
+        context.stroke();
+        context.moveTo(x+150,y);
+        context.lineTo(x, y+150);
+        context.stroke();
+    }
+    if(isX === false){
+        context.beginPath();
+        context.arc(x+75, y+75, 75, 0, 2 * Math.PI);
+        context.stroke();
+    }
+}
+
+const XOCord = function(arr1, arr2, isX){
+    if(arr1 === 0 && arr2 === 0){
+        drawXO(25,25,isX);
+    }
+    if(arr1 === 0 && arr2 === 1){
+        drawXO(25,225,isX);
+    }
+    if(arr1 === 0 && arr2 === 2){
+        drawXO(25,425,isX);
+    }
+    if(arr1 === 1 && arr2 === 0){
+        drawXO(225,25,isX);
+    }
+    if(arr1 === 1 && arr2 === 1){
+        drawXO(225,225,isX);
+    }
+    if(arr1 === 1 && arr2 === 2){
+        drawXO(225,425,isX);
+    }
+    if(arr1 === 2 && arr2 === 0){
+        drawXO(425,25,isX);
+    }
+    if(arr1 === 2 && arr2 === 1){
+        drawXO(425,225,isX);
+    }
+    if(arr1 === 2 && arr2 === 2){
+        drawXO(425,425,isX);
+    }
+}
+
+const nextMove = function(board,isX){
+
+    arrRand1 = rand(3)-1;
+    arrRand2 = rand(3)-1;
+
+    if(board[arrRand1][arrRand2] === ' '){
+        return [arrRand1,arrRand2];
+    } else {
+        return nextMove(board,isX);
+    }
+}
+
+const makeMove = function(board,location,isX){
+
+    const location1 = location[0];
+    const location2 = location[1];
+    if(isX === true){
+        if(board[location1][location2] === ' '){
+            board[location1][location2] = 'X';
+            XOCord(location1, location2, true);
+        } else {
+            alert("Game Over! You've tried to use a used location");
+            gameOver = true;
+        }
+    }
+
+    if(isX === false){
+        if(board[location1][location2] === ' '){
+            board[location1][location2] = 'O';
+            XOCord(location1, location2, false);
+        } else {
+            alert("Game Over! You've tried to use a used location");
+            gameOver = true;
+        }
+    }
+
+    return findWinner(board);
+}
+
+const startGame = function(){
+    context.clearRect(0,0,canvas.width,canvas.height);
+    isDrawn = 0;
+    x = 200;
+    y = 0;
+    context.strokeStyle = 'black';
+    boardDrawLoop();
+    gameOver = false;
+    board = [
+        [' ', ' ', ' '],
+        [' ', ' ', ' '],
+        [' ', ' ', ' ']
+    ];
+    whoStarts();
+}
+
+const findWinner = function(board){
+
+    if(board[0][0] === 'X' && board[0][1] === 'X' && board[0][2] === 'X'){
+		alert('X Won');
+        gameOver = true;
+    } else if(board[1][0] === 'X' && board[1][1] === 'X' && board[1][2] === 'X'){
+        alert('X Won');
+        gameOver = true;
+    } else if(board[2][0] === 'X' && board[2][1] === 'X' && board[2][2] === 'X'){
+        alert('X Won');
+        gameOver = true;
+    } else if(board[0][0] === 'X' && board[1][0] === 'X' && board[2][0] === 'X'){
+        alert('X Won');
+        gameOver = true;
+    } else if(board[0][1] === 'X' && board[1][1] === 'X' && board[2][1] === 'X'){
+        alert('X Won');
+        gameOver = true;
+    } else if(board[0][2] === 'X' && board[1][2] === 'X' && board[2][2] === 'X'){
+        alert('X Won');
+        gameOver = true;
+    } else if(board[0][0] === 'X' && board[1][1] === 'X' && board[2][2] === 'X'){
+        alert('X Won');
+        gameOver = true;
+    } else if(board[0][2] === 'X' && board[1][1] === 'X' && board[2][0] === 'X'){
+        alert('X Won');
+        gameOver = true;
+    } else if(board[0][0] === 'O' && board[0][1] === 'O' && board[0][2] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[1][0] === 'O' && board[1][1] === 'O' && board[1][2] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[2][0] === 'O' && board[2][1] === 'O' && board[2][2] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[0][0] === 'O' && board[1][0] === 'O' && board[2][0] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[0][1] === 'O' && board[1][1] === 'O' && board[2][1] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[0][2] === 'O' && board[1][2] === 'O' && board[2][2] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[0][0] === 'O' && board[1][1] === 'O' && board[2][2] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[0][2] === 'O' && board[1][1] === 'O' && board[2][0] === 'O'){
+        alert('O Won');
+        gameOver = true;
+    } else if(board[0][0] !== ' ' && board[0][1] !== ' ' && board[0][2] !== ' ' 
+           && board[1][0] !== ' ' && board[1][1] !== ' ' && board[1][2] !== ' ' 
+           && board[2][0] !== ' ' && board[2][1] !== ' ' && board[2][2] !== ' '){
+        alert('Draw');
+        gameOver = true;
+    } else {
+        return;
+    }
+}
+
+const cd = function(){
+    clickRdy = false;
+}
+
+const oMove = function(){
+    if(gameOver === false && isDrawn === 2){
+        makeMove(board,nextMove(board,false),false);
+    }    
+}
+
+startGame();
+
+canvas.addEventListener('mousedown', function(evt) {
+    
+    if(evt.offsetX > 0 && evt.offsetX < 200 && isDrawn === 2){
+        if(evt.offsetY > 0 && evt.offsetY < 200){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[0,0],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }
+            }
+        }
+        if(evt.offsetY > 200 && evt.offsetY < 400){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[0,1],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }    
+            }
+        }
+        if(evt.offsetY > 400 && evt.offsetY < 600){
+            if(clickRdy === false){
+                if(gameOver === false){  
+                    makeMove(board,[0,2],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }
+            }
+        }
+    }
+    if(evt.offsetX > 200 && evt.offsetX < 400 && isDrawn === 2){
+        if(evt.offsetY > 0 && evt.offsetY < 200){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[1,0],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }                
+            }
+        }
+        if(evt.offsetY > 200 && evt.offsetY < 400){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[1,1],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }
+            }
+        }
+        if(evt.offsetY > 400 && evt.offsetY < 600){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[1,2],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }                
+            }
+        }
+    }
+    if(evt.offsetX > 400 && evt.offsetX < 600 && isDrawn === 2){
+        if(evt.offsetY > 0 && evt.offsetY < 200){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[2,0],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }                
+            }
+        }
+        if(evt.offsetY > 200 && evt.offsetY < 400){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[2,1],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }                
+            }
+        }
+        if(evt.offsetY > 400 && evt.offsetY < 600){
+            if(clickRdy === false){
+                if(gameOver === false){
+                    makeMove(board,[2,2],true);
+                    clickRdy = true;
+                    setTimeout(oMove, 1000);
+                    setTimeout(cd, 1000);
+                }                
+            }
+        }
+    }
+    if(evt.offsetX > 600 && evt.offsetX < 800 && evt.offsetY > 200 && evt.offsetY < 400 && isDrawn === 2){
+        startGame();
+    }
+    
+}, false);	
+				
+		</script>
+    </body>
+</html>
